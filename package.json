@@ -1,0 +1,28 @@
+{
+  "name": "projeto-ia",
+  "version": "0.0.1",
+  "description": "Servidor Nodejs plataforma web",
+  "main": "main.js",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "dev": "nodemon main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pirumole/projeto-ia.git"
+  },
+  "keywords": [
+    "IA"
+  ],
+  "author": "victorpsf2@hotmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pirumole/projeto-ia/issues"
+  },
+  "homepage": "https://github.com/pirumole/projeto-ia#readme"
+}
