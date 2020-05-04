@@ -17,6 +17,7 @@ class Main extends App {
     async listen() {
         /** inicia @param configuração */
         await this.setConfig();
+        this.serverListen();
     }
 }
 

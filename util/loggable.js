@@ -1,6 +1,6 @@
-const MyEvent = require('./event');
+const Util = require('./util');
 
-class Loggable extends MyEvent {
+class Loggable extends Util {
     constructor() {
         super();
     }
