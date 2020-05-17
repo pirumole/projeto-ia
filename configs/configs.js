@@ -59,7 +59,7 @@ class Config extends Cache {
             let globalInterface = interfaces[interfaceNames[1]] || interfaces[interfaceNames[0]] || 'localhost';
 
             if (globalInterface != 'localhost') {
-                host = globalInterface[0].address;
+                host = globalInterface[1].address;
             }
         }
         if (!port) {
@@ -73,7 +73,6 @@ class Config extends Cache {
     async setConfig() {
         await this.getEnvProtocol();
 
-        console.log(this.procotolOption);
         if (await this.dirExists(__dirname + '/ssl')) {
             let ssl = await this.getSSLKeyAndCert();
 
