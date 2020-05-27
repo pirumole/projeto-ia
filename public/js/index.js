@@ -8,7 +8,48 @@ class Repository {
         this.mainColor = "#ffffff";
         this.text = this.document.getElementById(this.textId);
         this.textResize = "none";
-        this.intervalTimeTextValidate = 0.5;
+        this.intervalTimeTextValidate = 1;
+    }
+}
+
+class NativeRequest {
+    method;
+    url;
+    data;
+    responseData;
+
+    constructor(method, url) {
+        this.method = method;
+        this.url    = url;
+    }
+
+    toJson() {
+        return JSON.parse(this.responseData);
+    }
+
+    send(data) {        
+        return new Promise((resolve, reject) => {
+            try {
+                if (typeof data !== 'object' && data.length) throw 'type dont\'t supported';
+                for(let key in data) {
+                    this.data = new FormData();
+        
+                    this.data.append(key, data[key]);
+                }
+                
+                let xmlHttp = new XMLHttpRequest();
+    
+                xmlHttp.onloadend = () => {
+                    this.responseData = xmlHttp.responseText;
+                    return resolve(this);
+                };
+    
+                xmlHttp.open(this.method, this.url, true);
+                xmlHttp.send(this.data);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 }
 
@@ -66,11 +107,12 @@ class Controller extends Repository {
     async onTextChangeSync() {
         let lastLen = this.getTextLength();
 
-        setTimeout(() => {
+        setTimeout(async () => {
             let newLen = this.getTextLength();
 
             if (lastLen == newLen) {
-                alert(lastLen, newLen)
+                let request  = await (new NativeRequest('POST', '/')).send({ teste: 'a' });
+                alert(request.toJson());
             }
         }, this.getTimeFloat(this.intervalTimeTextValidate));
     }

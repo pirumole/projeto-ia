@@ -85,6 +85,7 @@ class Config extends Cache {
 
         this.protocolName = 'http';
         this.protocol = this.http.createServer(this.express);
+
         return true;
     }
 }

@@ -8,7 +8,7 @@ class App extends Api {
     async serverListen() {
         this.socketio(this.protocol);
         this.express.use(require('../controller'));
-        this.protocol.listen(this.procotolOption, () => this.log({
+        this.protocol.listen(this.procotolOption.port, () => this.log({
             message: `server open in ${this.protocolName}://${this.procotolOption.host}:${this.procotolOption.port}/`
         }));
     }
