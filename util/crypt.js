@@ -107,11 +107,6 @@ class CryptDepends {
        };
     }
 
-    getStringValue(index, string) {
-        // console.log(index, string);
-        return 'a';
-    }
-
     getArrayValue(index, array) {
         let info = this.getInfoArraY(array);
         if (index < info.min) index = 0;

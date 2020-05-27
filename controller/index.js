@@ -35,7 +35,21 @@ route.get('*/*', (req, res) => {
     res.end();
 });
 
-route.post('/', (req, res) => {
+route.post('/text', (req, res) => {
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.status(200);
+    return res.end();
+});
+
+route.post('/auth', (req, res) => {
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    
+    if (!req.body.id) {
+        res.writeJson({ status: 'error', message: 'data is missing', 'status-code': 200 });
+        res.status(400);
+        return res.end();
+    }
+
     var date = new Date();
     var la = req.socket.localAddress;
     var lp = req.socket.localPort;
@@ -47,19 +61,19 @@ route.post('/', (req, res) => {
         .then(function(cache) {
             if (!cache.key) {
                 Encrypt.encrypt({ 
-                    value: `${date.getTime()}@${la}@${lp}@${date.toLocaleDateString()}@${rp}@${ra}@${date.getTime()}`, 
+                    value: `${date.getTime()}@${la}@${lp}@${req.body.id}@${rp}@${ra}@${date.getTime()}`, 
                     encoding: 'utf8', 
                     toEncoding: 'hex' 
                 })
                     .then(function (encrypted) {
                         req.eventPromise('save-ip', { ra: ra, key: encrypted });
-                        res.write(JSON.stringify({ key: encrypted }));
+                        res.writeJson({ status: 'success', message: 'authentication is success', key: encrypted, 'status-code': 200 });
                         
                         res.status(200);
                         return res.end();
                     });
             } else {
-                res.write(JSON.stringify(cache));
+                res.writeJson({ status: 'success', message: 'authentication is success', key: cache.key, 'status-code': 200 });
                 res.status(200);
                 return res.end();
             }

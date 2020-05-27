@@ -23,7 +23,28 @@ class App extends Api {
             req.eventPromise = async (eventName, eventData) => {
                 return await this.eventPromise(eventName, eventData);
             };
-            next(); 
+
+            res.writeJson = function (object) {
+                res.write(JSON.stringify(object));
+            };
+
+            let body = '';
+            req.on('data', (chunk) => {
+                body += chunk.toString('utf8');
+            });
+
+            req.on('end', () => {
+                try {
+                    req.body = JSON.parse(body);
+                } catch (error) {
+                    req.body = {};
+                }
+
+                for(let key in req.headers) 
+                    if (key == 'authorization') req.body.authorization = req.headers[key].replace(/Bearer\s/g, '');
+
+                next(); 
+            });
         });
         this.express.use(require('../controller'));
         this.protocol.listen({ port: this.procotolOption.port }, () => this.log({
