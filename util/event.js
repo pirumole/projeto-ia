@@ -5,6 +5,7 @@ class MyEvents extends EventEmitter {
     constructor() {
         super();
         this.Options = Options;
+        this.crypt   = new require('./crypt');
     }
 }
 

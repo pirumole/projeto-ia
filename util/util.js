@@ -6,7 +6,6 @@ class Util extends MyEvent {
         this.fs = require('fs');
         this.os = require('os');
         this.process = require('process');
-        this.crypto = require('crypto');
         this.net = require('net');
         this.http = require('http');
         this.https = require('https');

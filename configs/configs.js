@@ -63,7 +63,7 @@ class Config extends Cache {
             }
         }
         if (!port) {
-            port = await this.getPort(8080, host);
+            port = await this.getPort(80, host);
         }
 
         this.procotolOption.host = host;

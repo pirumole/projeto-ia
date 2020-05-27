@@ -9,6 +9,7 @@ class Repository {
         this.text = this.document.getElementById(this.textId);
         this.textResize = "none";
         this.intervalTimeTextValidate = 1;
+        this.key = '';
     }
 }
 
@@ -111,8 +112,7 @@ class Controller extends Repository {
             let newLen = this.getTextLength();
 
             if (lastLen == newLen) {
-                let request  = await (new NativeRequest('POST', '/')).send({ teste: 'a' });
-                alert(request.toJson());
+
             }
         }, this.getTimeFloat(this.intervalTimeTextValidate));
     }
@@ -141,7 +141,15 @@ class Events extends Controller {
 }
 
 class Main extends Events {
-    constructor() { super(); }
+    constructor() { 
+        super();
+        this.setKey();
+    }
+
+    async setKey() {
+        let request  = await (new NativeRequest('POST', '/')).send({ teste: 'a' });
+        console.log(request.toJson());
+    }
 
     async listen() {
         this.render();

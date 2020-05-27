@@ -1,6 +1,6 @@
 {
   "name": "projeto-ia",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Servidor Nodejs plataforma web",
   "main": "main.js",
   "dependencies": {
@@ -8,7 +8,9 @@
     "express": "^4.17.1",
     "socket.io": "^2.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^2.0.4"    
+  },
   "scripts": {
     "dev": "nodemon main.js"
   },
