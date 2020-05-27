@@ -212,7 +212,7 @@ class Controller extends Util {
 
     async sendText() {
         let request = new NativeRequest('POST', '/text');
-        await request.sendJSON({ text: this.getText() }, this.getAuth());
+        await request.sendJSON({ text: this.getValueText() }, this.getAuth());
         let jsonResponse = request.getData();
     }
 
