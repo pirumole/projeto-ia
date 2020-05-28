@@ -56,14 +56,16 @@ class Config extends Cache {
         if (!host) {
             let interfaces = this.os.networkInterfaces();
             let interfaceNames = Object.keys(interfaces);
-            let globalInterface = interfaces[interfaceNames[1]] || interfaces[interfaceNames[0]] || 'localhost';
+            let globalInterface = interfaces['wlp8s0'] || interfaces['eth0'] || '127.0.0.1';
 
-            if (globalInterface != 'localhost') {
-                host = globalInterface[1].address;
+            if (globalInterface != '127.0.0.1') {
+                if (/\d*\.\d*\.\d*\.\d*/g.test(     globalInterface[0].address))      host = globalInterface[0].address;
+                else if (/\d*\.\d*\.\d*\.\d*/g.test(globalInterface[1].address))      host = globalInterface[1].address
+                else                                                                  host = '127.0.0.1';
             }
         }
         if (!port) {
-            port = await this.getPort(80, host);
+            port = await this.getPort(3000, host);
         }
 
         this.procotolOption.host = host;

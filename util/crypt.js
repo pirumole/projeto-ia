@@ -1,17 +1,19 @@
+const MyEvent = require('./event');
+
 class EncryptOption {
     value      = null;
     encoding   = '';
-    toEncoding = '';
+    _encoding = '';
 
     encodings  = ["ascii", "utf8", "utf-8", "utf16le", "ucs2", "ucs-2", "base64", "latin1", "binary", "hex"];
 
-    constructor(value, encoding, toEncoding) {
-        if (value && encoding && toEncoding) {
+    constructor(value, encoding, _encoding) {
+        if (value && encoding && _encoding) {
             if (!this.inArray(encoding, this.getEncodings()))   throw 'encoding not suported';
-            if (!this.inArray(toEncoding, this.getEncodings())) throw 'toEncoding not suported';
+            if (!this.inArray(_encoding, this.getEncodings()))  throw '_encoding not suported';
     
             this.encoding   = encoding;
-            this.toEncoding = toEncoding;
+            this._encoding  = _encoding;
             this.value      = value;
         }
     }
@@ -33,17 +35,17 @@ class EncryptOption {
 class DecryptOption {
     value      = null;
     encoding   = '';
-    toEncoding = '';
+    _encoding = '';
 
     encodings  = ["ascii", "utf8", "utf-8", "utf16le", "ucs2", "ucs-2", "base64", "latin1", "binary", "hex"];
 
-    constructor(value, encoding, toEncoding) {
-        if (value && encoding && toEncoding) {
+    constructor(value, encoding, _encoding) {
+        if (value && encoding && _encoding) {
             if (!this.inArray(encoding, this.getEncodings()))   throw 'encoding not suported';
-            if (!this.inArray(toEncoding, this.getEncodings())) throw 'toEncoding not suported';
+            if (!this.inArray(_encoding, this.getEncodings()))  throw '_encoding not suported';
     
             this.encoding   = encoding;
-            this.toEncoding = toEncoding;
+            this._encoding  = _encoding;
             this.value      = value;
         }
     }
@@ -62,7 +64,7 @@ class DecryptOption {
     }
 }
 
-class CryptDepends {
+class CryptDepends extends MyEvent {
     crypto    = require('crypto');
     algorithm = 'aes-192-cbc';
     encoding  = 'sha256';
@@ -79,6 +81,7 @@ class CryptDepends {
     key       = null;
 
     constructor() {
+        super();
         this.setPassword();
     }
 
@@ -197,24 +200,24 @@ class Crypt extends CryptDepends {
     }
 
     async encrypt(option = new EncryptOption) {
-        new EncryptOption(option.value, option.encoding, option.toEncoding);
+        new EncryptOption(option.value, option.encoding, option._encoding);
         let encrypt = await this.getEncrypt();
 
         let encrypted     = '';
 
-        encrypted        += encrypt.update(option.value, option.encoding, option.toEncoding);
-        encrypted        += encrypt.final(option.toEncoding);
+        encrypted        += encrypt.update(option.value, option.encoding, option._encoding);
+        encrypted        += encrypt.final(option._encoding);
 
         return encrypted;
     }
 
     async decrypt(option = new DecryptOption) {
-        new DecryptOption(option.value, option.toEncoding, option.encoding);
+        new DecryptOption(option.value, option._encoding, option.encoding);
         let decrypt = await this.getDecrypt();
 
         let decrypted     = '';
 
-        decrypted        += decrypt.update(option.value, option.toEncoding, option.encoding);
+        decrypted        += decrypt.update(option.value, option._encoding, option.encoding);
         decrypted        += decrypt.final(option.encoding);
 
         return decrypted;

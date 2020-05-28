@@ -1,6 +1,6 @@
-const MyEvent = require('./event');
+const Crypto  = require('./crypt');
 
-class Util extends MyEvent {
+class Util extends Crypto {
     constructor() {
         super();
         this.fs = require('fs');

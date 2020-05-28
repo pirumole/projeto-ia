@@ -3,13 +3,38 @@ const Api = require('../api');
 class App extends Api {
     constructor() {
         super();
+        this.on('response-error-format', (data, callback) => this.errorFormat(data, callback));
+        this.on('response-success-format', (data, callback) => this.successFormat(data, callback));
+    }
+
+    errorFormat(_opt, callback) {
+        let date = new Date();
+
+        callback(null, {
+            status    : 'error',
+            timestamp : date.getTime(),
+            code      : _opt.status,
+            message   : _opt.message,
+        });
+    }
+
+    successFormat(_opt, callback) {
+        let date = new Date();
+
+        callback(null, {
+            status    : 'success',
+            timestamp : date.getTime(),
+            code      : _opt.status,
+            message   : _opt.message,
+            result    : _opt.data || {}
+        });
     }
 
     eventPromise(eventName, eventData) {
         return new Promise((resolve, reject) => {
             this.emit(eventName, eventData, (err, data) => {
                 if (err) {
-                    reject(err)
+                    reject(err);
                 } else {
                     resolve(data);
                 }
@@ -17,39 +42,65 @@ class App extends Api {
         });
     }
 
-    async serverListen() {
-        this.socketio(this.protocol);
-        this.express.use((req, res, next) => {
-            req.eventPromise = async (eventName, eventData) => {
-                return await this.eventPromise(eventName, eventData);
-            };
-
-            res.writeJson = function (object) {
-                res.write(JSON.stringify(object));
-            };
-
-            let body = '';
-            req.on('data', (chunk) => {
-                body += chunk.toString('utf8');
-            });
-
-            req.on('end', () => {
+    async ioListen() {
+        this.socketio.on('connect', async (socket) => {
+            socket.on('message', async (data, callback) => {
                 try {
-                    req.body = JSON.parse(body);
+                    let response = await this.sendMessageToIa(data);
+                    callback(null, await this.eventPromise('response-success-format', {
+                        message: 'ia response success',
+                        code: 200,
+                        data: response
+                    }));
                 } catch (error) {
-                    req.body = {};
+                    callback(await this.eventPromise('response-error-format', {
+                        message: 'error response ia',
+                        code: 200
+                    }), null);
                 }
-
-                for(let key in req.headers) 
-                    if (key == 'authorization') req.body.authorization = req.headers[key].replace(/Bearer\s/g, '');
-
-                next(); 
             });
+            socket.on('disconnect', () => {
+                this.emit('clear-user-cache', socket);
+            })
         });
+    }
+
+    middleware(req, res, next) {
+        req.eventPromise = async (eventName, eventData) => {
+            return await this.eventPromise(eventName, eventData);
+        };
+
+        res.writeJson = function (object) {
+            res.write(JSON.stringify(object));
+        };
+
+        let body = '';
+        req.on('data', (chunk) => {
+            body += chunk.toString('utf8');
+        });
+
+        req.on('end', () => {
+            try {
+                req.body = JSON.parse(body);
+            } catch (error) {
+                req.body = {};
+            }
+
+            for(let key in req.headers) 
+                if (key == 'authorization') req.body.authorization = req.headers[key].replace(/Bearer\s/g, '');
+
+            next();
+        });
+    }
+
+    async serverListen() {
+        this.socketio = this.socketio(this.protocol);
+        this.express.use((req, res, next) => this.middleware(req, res, next));
         this.express.use(require('../controller'));
         this.protocol.listen({ port: this.procotolOption.port }, () => this.log({
             message: `server open in ${this.protocolName}://${this.procotolOption.host}:${this.procotolOption.port}/`
         }));
+        this.ioListen();
     }
 }
 

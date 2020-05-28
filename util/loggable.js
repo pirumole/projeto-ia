@@ -70,6 +70,7 @@ class Loggable extends Util {
         if (option.delay  && option.delay.lastLog) await this.sleep(option.delay.lastLog);
 
         option.message = this.color(option.color) + option.message;
+        console.log(option.message);
 
         if (option.delay  && option.delay.afterLog) await this.sleep(option.delay.afterLog);
     }
