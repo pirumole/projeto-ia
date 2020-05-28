@@ -1,8 +1,5 @@
 const { Router } = require('express');
-const fs = require('fs');
 var route = Router();
-const EncryptClass = require('../util/crypt');
-const Encrypt = new EncryptClass();
 
 let path = __dirname.replace('/controller', '');
 
@@ -31,57 +28,58 @@ route.get('/css/:file', (req, res) => {
 });
 
 route.get('*/*', (req, res) => {
+    /**
+     * @param adicionarPagina404
+     */
     res.status(404);
     res.end();
 });
 
-route.post('/text', (req, res) => {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.status(200);
-    return res.end();
-});
+route.post('/auth', async (req, res) => {
+    let id = req.body.id;
+    res.set({'Content-Type': 'application/json'})
 
-route.post('/auth', (req, res) => {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    
-    if (!req.body.id) {
-        res.writeJson({ status: 'error', message: 'data is missing', 'status-code': 200 });
-        res.status(400);
+    if (!id) {
+        res.json(await req.eventPromise('response-error-format', {
+            message : 'data is missing',
+            status  : 400
+        }));
+        res.status(200);
         return res.end();
     }
 
-    var date = new Date();
-    var la = req.socket.localAddress;
-    var lp = req.socket.localPort;
-    
-    var ra = req.socket.remoteAddress;
-    var rp = req.socket.remotePort;
-    
-    req.eventPromise('find-ip', { ra: ra })
-        .then(function(cache) {
-            if (!cache.key) {
-                Encrypt.encrypt({ 
-                    value: `${date.getTime()}@${la}@${lp}@${req.body.id}@${rp}@${ra}@${date.getTime()}`, 
-                    encoding: 'utf8', 
-                    toEncoding: 'hex' 
-                })
-                    .then(function (encrypted) {
-                        req.eventPromise('save-ip', { ra: ra, key: encrypted });
-                        res.writeJson({ status: 'success', message: 'authentication is success', key: encrypted, 'status-code': 200 });
-                        
-                        res.status(200);
-                        return res.end();
-                    });
-            } else {
-                res.writeJson({ status: 'success', message: 'authentication is success', key: cache.key, 'status-code': 200 });
-                res.status(200);
-                return res.end();
+    var encryptOpt = {
+        date             : new Date(),
+        'local-address'  : req.socket.localAddress,
+        'local-port'     : req.socket.localPort,
+        'remote-address' : req.socket.remoteAddress,
+        'remote-port'    : req.socket.remotePort,
+        id               : id
+    };
+
+    try {
+        let cache     = await req.eventPromise('find-ip', { ra: encryptOpt['remote-address'] });
+        var key       = cache.key;
+        if (!key) {
+            key       = await req.eventPromise('auth-user-platform', encryptOpt );
+                        req.eventPromise('save-ip', { ra: encryptOpt['remote-address'], key: key });
+        }
+
+        res.json(await req.eventPromise('response-success-format', {
+            message : 'authentication success',
+            status  : 200,
+            data    : {
+                key : key
             }
-        })
-        .catch(function (error) {
-            res.status(500);
-            return res.end();
-        });
+        }));
+        return res.end();
+    } catch (error) {
+        res.json(await req.eventPromise('response-error-format', {
+            message : 'server error',
+            status  : 500
+        }));
+        return res.end(200);
+    }
 });
 
 module.exports = route;

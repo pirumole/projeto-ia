@@ -1,6 +1,6 @@
-const Config =require('../configs');
+const Core   = require('../app/core');
 
-class Api extends Config {
+class Api extends Core {
     constructor() {
         super();
     }
