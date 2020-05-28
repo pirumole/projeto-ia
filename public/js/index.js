@@ -287,8 +287,10 @@ class Controller extends Util {
     }
 
     async removeButtons(div) {
-        const text = div.innerText;
-        this.text.value += ` ${text} `;
+        if (div) {
+            const text = div.innerText;
+            this.text.value += ` ${text} `;
+        } 
         this.onOption = false;
 
         while(this.options.firstChild) {
@@ -341,6 +343,7 @@ class Controller extends Util {
 
     async onTextChangeSync() {
         let lastLen = this.getTextLength();
+        if (this.onOption) this.removeButtons(null);
 
         if (!lastLen) return true;
         setTimeout(async () => {
