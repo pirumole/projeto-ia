@@ -79,6 +79,19 @@ class App extends Api {
     }
 
     middleware(req, res, next) {
+        // Website you wish to allow to connect
+        res.setHeader('Access-Control-Allow-Origin', '*');
+
+        // Request methods you wish to allow
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+        // Request headers you wish to allow
+        res.setHeader('Access-Control-Allow-Headers', '*');
+
+        // Set to true if you need the website to include cookies in the requests sent
+        // to the API (e.g. in case you use sessions)
+        res.setHeader('Access-Control-Allow-Credentials', false);
+
         req.eventPromise = async (eventName, eventData) => {
             return await this.eventPromise(eventName, eventData);
         };
@@ -99,10 +112,10 @@ class App extends Api {
                 req.body = {};
             }
 
-            // try {
-            //     for(let key in req.headers) 
-            //         if (key == 'authorization') req.body.authorization = req.headers[key].replace(/Bearer\s/g, '');
-            // } catch (error) {}
+            try {
+                for(let key in req.headers) 
+                    if (key == 'authorization') req.body.authorization = req.headers[key].replace(/Bearer\s/g, '');
+            } catch (error) {}
 
             next();
         });
