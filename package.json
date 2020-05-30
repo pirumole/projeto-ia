@@ -1,6 +1,6 @@
 {
   "name": "projeto-ia",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Servidor Nodejs plataforma web",
   "main": "main.js",
   "dependencies": {

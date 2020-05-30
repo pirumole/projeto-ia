@@ -80,8 +80,112 @@ class Core extends Config {
         }
     }
 
+    buildQuery(query) {
+        let _query = '?';
+        let keys = Object.keys(query);
+
+        for (let x = 0; x < keys.length; x++) {
+            let key        = keys[x];
+            let changedKey = '';
+
+            if (key == 'text') {
+                changedKey = 'text_input';
+            }
+
+            if (x == 0) {
+                _query += `${(changedKey) ? changedKey : key}=${query[key]}`;
+            } else {
+                _query += `&${(changedKey) ? changedKey : key}=${query[key]}`;
+            }
+        }
+
+        return _query;
+    }
+
+    getURI(data) {
+        let protocol = this.process.env.IA_PROTOCOL;
+        let domain   = this.process.env.IA_DOMAIN;
+        let query    = this.buildQuery(data);
+
+        return new URL(`${protocol}://${domain}${query}`);
+    }
+
+    request(data) {
+        var protocol = this.process.env.IA_PROTOCOL;
+        var URI = this.getURI(data);
+        return new Promise((resolve, reject) => {
+            var _protocol = (protocol == 'http') ? this.http : this.https; 
+
+            var req = _protocol.request(URI, (res) => {
+                let statuscode = res.statusCode;
+                res.setEncoding('utf8');
+                var data = '';
+
+                res.on('error', () => {
+                    reject('failure in request');
+                })
+
+                res.on('data', (chunk) => {
+                    if (chunk) {
+                        data += chunk.toString('utf8');
+                    }
+                });
+
+                res.on('end', () => {
+                    resolve({ status: statuscode, result: data });
+                })
+            });
+
+            req.end();
+        });
+    }
+
+    getArrayInfo(array = []) {
+        let initialLen = 0;
+        let finalLen   = array.length;
+
+        return {
+            initialLen,
+            finalLen,
+            array: array
+        };
+    }
+
+    handleText(data = { text: '' }) {
+        let textArray = data.text.split(' ').filter((a) => { if (a) return a; });
+        let _info = this.getArrayInfo(textArray);
+        var _text = '';
+        let len = 0;
+
+        if (_info.finalLen >= 6) {
+            len = _info.finalLen - 6;
+        }
+
+        for (let x = len; x < _info.finalLen; x++) {
+            if (x == _info.finalLen - 1)
+                _text += _info.array[x];
+            else
+                _text += _info.array[x] + ' ';
+        }
+
+        return data;
+    }
+
+    convertJson(response = { status : 0, result : '' }) {
+        if (response.status != 200) return null;
+        try {
+            let json = JSON.parse(response.result);
+            return json;
+        } catch (error) {
+            return null;
+        }
+    }
+
     async sendMessageToIa(data) {
-        return { options: ['text texto bastantemente grande, grande de mais 01', 'text 02', 'text 03'] };
+        delete data.auth;
+        data = this.handleText(data);
+        let response = await this.request(data);
+        return { options: this.convertJson(response) };
     }
 }
 
