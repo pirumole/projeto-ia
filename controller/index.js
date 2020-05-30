@@ -27,6 +27,14 @@ route.get('/css/:file', (req, res) => {
     });
 });
 
+route.get('/icon/:file', (req, res) => {
+    res.sendFile(path + `/public/icon/${req.params.file}`, (err) => {
+        if (err) res.status(404);
+        else res.status(200);
+        res.end();
+    });
+});
+
 route.get('*/*', (req, res) => {
     /**
      * @param adicionarPagina404
@@ -36,25 +44,12 @@ route.get('*/*', (req, res) => {
 });
 
 route.post('/auth', async (req, res) => {
-    let id = req.body.id;
-    res.set({'Content-Type': 'application/json'})
-
-    if (!id) {
-        res.json(await req.eventPromise('response-error-format', {
-            message : 'data is missing',
-            status  : 400
-        }));
-        res.status(200);
-        return res.end();
-    }
-
     var encryptOpt = {
         date             : new Date(),
         'local-address'  : req.socket.localAddress,
         'local-port'     : req.socket.localPort,
         'remote-address' : req.socket.remoteAddress,
-        'remote-port'    : req.socket.remotePort,
-        id               : id
+        'remote-port'    : req.socket.remotePort
     };
 
     try {

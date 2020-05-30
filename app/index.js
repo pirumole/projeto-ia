@@ -15,6 +15,7 @@ class App extends Api {
             timestamp : date.getTime(),
             code      : _opt.status,
             message   : _opt.message,
+            result    : _opt.data || {}
         });
     }
 
@@ -46,11 +47,23 @@ class App extends Api {
         this.socketio.on('connect', async (socket) => {
             socket.on('message', async (data, callback) => {
                 try {
-                    let response = await this.sendMessageToIa(data);
-                    callback(null, await this.eventPromise('response-success-format', {
-                        message: 'ia response success',
+                    let cache = await this.eventPromise('find-ip', { ra: socket.client.conn.remoteAddress });
+                    if (cache && data.auth && cache.key && cache.key == data.auth)
+                        if (await this.validateUser(data.auth)) {
+                            let response = await this.sendMessageToIa(data);
+                            callback(null, await this.eventPromise('response-success-format', {
+                                message: 'ia response success',
+                                code: 200,
+                                data: response
+                            }));
+                        }
+
+                    callback(null, await this.eventPromise('response-error-format', {
+                        message: 'unauthenticated user',
                         code: 200,
-                        data: response
+                        data: {
+                            autentication: false
+                        }
                     }));
                 } catch (error) {
                     callback(await this.eventPromise('response-error-format', {
@@ -86,8 +99,10 @@ class App extends Api {
                 req.body = {};
             }
 
-            for(let key in req.headers) 
-                if (key == 'authorization') req.body.authorization = req.headers[key].replace(/Bearer\s/g, '');
+            // try {
+            //     for(let key in req.headers) 
+            //         if (key == 'authorization') req.body.authorization = req.headers[key].replace(/Bearer\s/g, '');
+            // } catch (error) {}
 
             next();
         });
