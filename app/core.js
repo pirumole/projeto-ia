@@ -118,6 +118,7 @@ class Core extends Config {
 
             var req = _protocol.request(URI, (res) => {
                 let statuscode = res.statusCode;
+                let header     = res.headers;
                 res.setEncoding('utf8');
                 var data = '';
 
@@ -132,7 +133,7 @@ class Core extends Config {
                 });
 
                 res.on('end', () => {
-                    resolve({ status: statuscode, result: data });
+                    resolve({ status: statuscode, headers: header, result: data });
                 })
             });
 
@@ -172,13 +173,15 @@ class Core extends Config {
     }
 
     convertJson(response = { status : 0, result : '' }) {
-        if (response.status != 200) return null;
-        try {
-            let json = JSON.parse(response.result);
-            return json;
-        } catch (error) {
-            return null;
-        }
+        let _result = null;
+        if (response.status == 200) {
+            try {
+                _result = response.result.replace(/\[|\]|\"|\'|\n|\r|\s/g, '').split(',');
+            } catch (error) {
+            }
+        };
+
+        return _result;
     }
 
     async sendMessageToIa(data) {

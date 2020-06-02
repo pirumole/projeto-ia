@@ -56,7 +56,11 @@ class Config extends Cache {
         if (!host) {
             let interfaces = this.os.networkInterfaces();
             let interfaceNames = Object.keys(interfaces);
-            let globalInterface = interfaces['wlp8s0'] || interfaces['eth0'] || '127.0.0.1';
+            let globalInterface = interfaces['wlp8s0'] || 
+                                  interfaces['eth0']   || 
+                                  interfaces['enp7s0'] || 
+                                  interfaces['lo']     || 
+                                  '127.0.0.1';
 
             if (globalInterface != '127.0.0.1') {
                 if (/\d*\.\d*\.\d*\.\d*/g.test(     globalInterface[0].address))      host = globalInterface[0].address;
